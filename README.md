@@ -1,6 +1,8 @@
 # libutp-rs
 
-An async rust interface to [libutp](https://github.com/bittorrent/libutp)
+[Docs](https://docs.rs/libutp-rs/0.1.0/libutp_rs/)
+
+An async rust interface to [libutp](https://github.com/bittorrent/libutp).
 
 ## Examples
 

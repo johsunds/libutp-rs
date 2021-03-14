@@ -277,6 +277,7 @@ unsafe impl Send for LibUtp {}
 /// The [`UtpContext`] is the core of a UTP application. It sets up the backing UDP socket and provides
 /// methods for initiating and accepting connections.
 ///
+#[derive(Clone)]
 pub struct UtpContext {
     // libutp is not thread safe, so only one thread at a time can access the underlying utp_context
     libutp: Arc<Mutex<LibUtp>>,
@@ -576,6 +577,7 @@ impl QueuedUtpSocket {
 ///
 /// Writing to and reading from a [`UtpSocket`] is done using the [`AsyncWrite`] and [`AsyncRead`] traits respectively.
 ///
+#[derive(Clone)]
 pub struct UtpSocket {
     addr: SocketAddr,
     libutp: Arc<Mutex<LibUtp>>,

@@ -21,7 +21,7 @@ use futures::{ready, Stream};
 use libutp_sys::*;
 use log::*;
 use std::fmt::{self, Debug, Formatter};
-use tokio::io::{AsyncRead, AsyncWrite};
+use tokio::io::{AsyncRead, AsyncWrite, ReadBuf};
 
 type InnerUtpContextHandle = wrappers::UtpContextHandle<ContextData, SocketData>;
 type InnerUtpContext = wrappers::UtpContext<ContextData, SocketData>;
@@ -116,17 +116,18 @@ impl UtpReader {
 }
 
 impl UtpReader {
-    fn poll_read(&mut self, cx: &mut Context, buf: &mut [u8]) -> Poll<io::Result<usize>> {
-        let read = self.data.read(buf)?;
+    fn poll_read(&mut self, cx: &mut Context, buf: &mut ReadBuf) -> Poll<io::Result<()>> {
+        let read = self.data.read(buf.initialize_unfilled())?;
+        buf.advance(read);
         if read == 0 {
             if self.eof() {
-                Poll::Ready(Ok(0))
+                Poll::Ready(Ok(()))
             } else {
                 self.waker.register(cx.waker());
                 Poll::Pending
             }
         } else {
-            Poll::Ready(Ok(read))
+            Poll::Ready(Ok(()))
         }
     }
 
@@ -607,8 +608,8 @@ impl AsyncRead for UtpSocket {
     fn poll_read(
         mut self: Pin<&mut Self>,
         cx: &mut Context<'_>,
-        buf: &mut [u8],
-    ) -> Poll<io::Result<usize>> {
+        buf: &mut ReadBuf,
+    ) -> Poll<io::Result<()>> {
         self.error_channel.check_err(&self.addr)?;
         self.as_mut().reader.poll_read(cx, buf)
     }
